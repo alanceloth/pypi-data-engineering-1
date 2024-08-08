@@ -44,3 +44,14 @@ def get_bigquery_result(
     except Exception as e:
         logger.error(f"Error running query: {e}")
         raise
+
+def build_pypi_query() -> str:
+    return f"""
+    SELECT *
+    FROM
+        `biquery-public-data.pypi.file_downloads`
+    WHERE
+        project = 'duckdb'
+        AND timestamp >= TIMESTAMP("2024-08-06")
+        AND timestamp < TIMESTAMP("2024-08-07)
+"""
