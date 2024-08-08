@@ -144,6 +144,23 @@ files = [
 ]
 
 [[package]]
+name = "db-dtypes"
+version = "1.2.0"
+description = "Pandas Data Types for SQL systems (BigQuery, Spanner)"
+optional = false
+python-versions = ">=3.7"
+files = [
+    {file = "db-dtypes-1.2.0.tar.gz", hash = "sha256:3531bb1fb8b5fbab33121fe243ccc2ade16ab2524f4c113b05cc702a1908e6ea"},
+    {file = "db_dtypes-1.2.0-py2.py3-none-any.whl", hash = "sha256:6320bddd31d096447ef749224d64aab00972ed20e4392d86f7d8b81ad79f7ff0"},
+]
+
+[package.dependencies]
+numpy = ">=1.16.6"
+packaging = ">=17.0"
+pandas = ">=0.24.2"
+pyarrow = ">=3.0.0"
+
+[[package]]
 name = "duckdb"
 version = "1.0.0"
 description = "DuckDB in-process database"
@@ -272,11 +289,14 @@ files = [
 ]
 
 [package.dependencies]
+db-dtypes = {version = ">=0.3.0,<2.0.0dev", optional = true, markers = "extra == \"pandas\""}
 google-api-core = {version = ">=1.34.1,<2.0.dev0 || >=2.11.dev0,<3.0.0dev", extras = ["grpc"]}
 google-auth = ">=2.14.1,<3.0.0dev"
 google-cloud-core = ">=1.6.0,<3.0.0dev"
 google-resumable-media = ">=0.6.0,<3.0dev"
 packaging = ">=20.0.0"
+pandas = {version = ">=1.1.0", optional = true, markers = "extra == \"pandas\""}
+pyarrow = {version = ">=3.0.0", optional = true, markers = "extra == \"pandas\""}
 python-dateutil = ">=2.7.2,<3.0dev"
 requests = ">=2.21.0,<3.0.0dev"
 
@@ -1136,4 +1156,4 @@ dev = ["black (>=19.3b0)", "pytest (>=4.6.2)"]
 [metadata]
 lock-version = "2.0"
 python-versions = "^3.11"
-content-hash = "4d59fa62338dec213f29948f37b014eeb4f10c18f7251b493b582a47b23fd07f"
+content-hash = "f45f82909a69c1c68b6b33349873f0a1dc8e1dbce62d222c5595087837f57209"

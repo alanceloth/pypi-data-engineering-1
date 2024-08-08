@@ -47,11 +47,15 @@ def get_bigquery_result(
 
 def build_pypi_query() -> str:
     return f"""
-    SELECT *
-    FROM
-        `biquery-public-data.pypi.file_downloads`
-    WHERE
+    SELECT * 
+    FROM 
+        `bigquery-public-data.pypi.file_downloads` 
+    WHERE 
         project = 'duckdb'
         AND timestamp >= TIMESTAMP("2024-08-06")
-        AND timestamp < TIMESTAMP("2024-08-07)
+        AND timestamp < TIMESTAMP("2024-08-07")
 """
+
+# gcloud projects add-iam-policy-binding pypi-data-engineering-1 \
+#     --member=serviceAccount:dev-pypi@pypi-data-engineering-1.iam.gserviceaccount.com \
+#     --role=roles/bigquery.jobUser
