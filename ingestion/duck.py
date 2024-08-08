@@ -27,7 +27,7 @@ def write_to_s3_from_duckdb(
                 FROM {table}
 
         )
-        TO '{s3_path}/{table}
+        TO '{s3_path}/{table}'
         (FORMAT PARQUET, PARTITION_BY (year, month), OVERWRITE_OR_IGNORE 1, COMPRESSION 'ZSTD', ROW_GROUP_SIZE 1000000);
         """
     )

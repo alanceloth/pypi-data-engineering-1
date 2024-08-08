@@ -4,7 +4,14 @@ from ingestion.bigquery import (
     build_pypi_query,
 )
 import os
-from ingestion.models import PypiJobParameters, FileDownloads, validate_dataframe
+import duckdb
+from loguru import logger
+from ingestion.models import (
+    validate_dataframe,
+    FileDownloads,
+    PypiJobParameters,
+)
+import fire
 from ingestion.duck import (
     create_table_from_dataframe,
     load_aws_credentials,
@@ -12,22 +19,19 @@ from ingestion.duck import (
     write_to_md_from_duckdb,
     connect_to_md,
 )
-import fire
-import duckdb
-from loguru import logger
+
 
 def main(params: PypiJobParameters):
     df = get_bigquery_result(
         query_str=build_pypi_query(params),
         bigquery_client=get_bigquery_client(project_name=params.gcp_project),
     )
-    print(df)
     validate_dataframe(df, FileDownloads)
     conn = duckdb.connect()
     create_table_from_dataframe(
-        duckdb_con=conn,
-        table_name=params.table_name,
-        table_ddl=duckdb_ddl_file_downloads(params.table_name),
+        conn,
+        params.table_name,
+        "df"
     )
 
     logger.info(f"Sinking data to {params.destination}")
