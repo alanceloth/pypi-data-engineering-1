@@ -32,7 +32,7 @@ def get_bigquery_client(project_name: str) -> bigquery.Client:
 
 
 def get_bigquery_result(
-    query_str: str, bigquery_client: bigquery.Client, model: FileDownloads
+    query_str: str, bigquery_client: bigquery.Client, #model: FileDownloads
 ) -> pa.Table:
     """Get query result from BigQuery and yield rows as dictionaries."""
     try:
@@ -40,7 +40,7 @@ def get_bigquery_result(
         start_time = time.time()
         # Run the query and directly load into a DataFrame
         logger.info(f"Running query: {query_str}")
-        dataframe = bigquery_client.query(query_str).to_dataframe(dtypes=FileDownloads().pandas_dtypes)
+        dataframe = bigquery_client.query(query_str).to_dataframe()
         #pa_tbl = bigquery_client.query(query_str).to_arrow()
         # Log the time taken for query execution and data loading
         elapsed_time = time.time() - start_time

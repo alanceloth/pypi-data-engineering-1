@@ -10,7 +10,8 @@ import fire
 
 def main(params: PypiJobParameters):
     df = get_bigquery_result(
-        build_pypi_query(), get_bigquery_client(params.gcp_project)
+        query_str=build_pypi_query(params),
+        bigquery_client=get_bigquery_client(project_name=params.gcp_project),
     )
     print(df)
     

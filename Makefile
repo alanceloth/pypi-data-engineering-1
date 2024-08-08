@@ -4,6 +4,8 @@ export
 .PHONY : pypi-ingest format
 
 pypi-ingest:
+	@echo "Running the ingest pipeline..."
+	@GOOGLE_APPLICATION_CREDENTIALS=$(GOOGLE_APPLICATION_CREDENTIALS) \
 	poetry run python3 -m ingestion.pipeline \
 		--start_date $$START_DATE \
 		--end_date $$END_DATE \
