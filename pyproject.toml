@@ -1,0 +1,25 @@
+[tool.poetry]
+name = "pypi-data-engineering-1"
+version = "0.1.0"
+description = ""
+authors = ["Alan Lanceloth <alan.lanceloth@gmail.com>"]
+readme = "README.md"
+
+[tool.poetry.dependencies]
+python = "^3.11"
+duckdb = "^1.0.0"
+google-cloud-bigquery = "^3.25.0"
+google-auth = "^2.33.0"
+google-cloud-bigquery-storage = "^2.25.0"
+pyarrow = "^17.0.0"
+pandas = "^2.2.2"
+fire = "^0.6.0"
+loguru = "^0.7.2"
+pydantic = "^2.8.2"
+pytest = "^8.3.2"
+ruff = "^0.5.6"
+
+
+[build-system]
+requires = ["poetry-core"]
+build-backend = "poetry.core.masonry.api"
