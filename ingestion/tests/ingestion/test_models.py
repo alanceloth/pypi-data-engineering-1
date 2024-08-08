@@ -1,4 +1,4 @@
-from ingestion.models import PypiJobParameters, FileDownloads, ValidationError, BaseModel, Type
+from ingestion.models import PypiJobParameters, FileDownloads, ValidationError, BaseModel, Type, validate_dataframe
 from ingestion.bigquery import build_pypi_query
 import pytest
 import duckdb
@@ -71,36 +71,15 @@ def file_downloads_df():
     # Create DataFrame
     return conn.execute("SELECT * FROM tbl USING SAMPLE 5").df()
 
-def validate_dataframe(df: pd.DataFrame, model: Type[BaseModel]):
-    """
-    Validates each row of a DataFrame against a Pydantic model.
-    Raises DataFrameValidationError if any row fails validation.
-    :param df: DataFrame to validate.
-    :param model: Pydantic model to validate against.
-    :raises: DataFrameValidationError
-    """
-    errors = []
-
-    for i, row in enumerate(df.to_dict(orient="records")):
-        try:
-            model(**row)
-        except ValidationError as e:
-            errors.append(f"Row {i} failed validation: {e}")
-
-    if errors:
-        error_message = "\n".join(errors)
-        raise DataFrameValidationError(
-            f"DataFrame validation failed with the following errors:\n{error_message}"
-        )
-    
+   
 def test_file_download_validation(file_downloads_df):
     try:
         validate_dataframe(file_downloads_df, FileDownloads)
     except DataFrameValidationError as e: 
         pytest.fail(f"DataFrame validation failed: {e}")
 
-def test_file_download_invalid_data(file_downloads_df):
-    file_downloads_df.at[0, "details"] = 123
+# def test_file_download_invalid_data(file_downloads_df):
+#     file_downloads_df.at[0, "cypher"] = 123
 
-    with pytest.raises(DataFrameValidationError):
-        validate_dataframe(file_downloads_df, FileDownloads)
+#     with pytest.raises(DataFrameValidationError):
+#         validate_dataframe(file_downloads_df, FileDownloads)

@@ -101,3 +101,25 @@ def validate_table(df: pd.DataFrame, model: Type[BaseModel]):
         raise DataFrameValidationError(
             f"Table validation failed with the following errors:\n{error_message}"
         )
+    
+def validate_dataframe(df: pd.DataFrame, model: Type[BaseModel]):
+    """
+    Validates each row of a DataFrame against a Pydantic model.
+    Raises DataFrameValidationError if any row fails validation.
+    :param df: DataFrame to validate.
+    :param model: Pydantic model to validate against.
+    :raises: DataFrameValidationError
+    """
+    errors = []
+
+    for i, row in enumerate(df.to_dict(orient="records")):
+        try:
+            model(**row)
+        except ValidationError as e:
+            errors.append(f"Row {i} failed validation: {e}")
+
+    if errors:
+        error_message = "\n".join(errors)
+        raise DataFrameValidationError(
+            f"DataFrame validation failed with the following errors:\n{error_message}"
+        )
