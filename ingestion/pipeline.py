@@ -6,7 +6,7 @@ from ingestion.bigquery import (
 import os
 from ingestion.models import PypiJobParameters
 import fire
-
+import duckdb
 
 def main(params: PypiJobParameters):
     df = get_bigquery_result(
@@ -14,8 +14,10 @@ def main(params: PypiJobParameters):
         bigquery_client=get_bigquery_client(project_name=params.gcp_project),
     )
     print(df)
-    
-    print("hello world")
+    conn = duckdb.connect()
+    conn.sql("COPY (SELECT * FROM df) TO 'data/duckdb.csv'")
+    print(os.getcwd())
+    print("csv saved at data/duckdb.csv")
 
 
 if __name__ == "__main__":

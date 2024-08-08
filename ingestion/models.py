@@ -1,6 +1,8 @@
-from pydantic import BaseModel, Field
-from typing import List, Optional, Union, Annotated
+from pydantic import BaseModel, Field, ValidationError
+from typing import List, Optional, Union, Annotated, Type
 from datetime import datetime
+import pandas as pd
+
 
 class PypiJobParameters(BaseModel):
     start_date: str = "2019-04-01"
@@ -68,3 +70,34 @@ class FileDownloads(BaseModel):
     details: Optional[Details] = None
     tls_protocol: Optional[str] = None
     tls_cipher: Optional[str] = None
+
+class TableValidationError(Exception):
+    """Custom exception for Table validation errors."""
+
+    pass
+
+class DataFrameValidationError(Exception):
+    """Custom exception for DataFrame validation errors."""
+
+def validate_table(df: pd.DataFrame, model: Type[BaseModel]):
+    """
+    Validates each row of a DataFrame against a Pydantic model.
+    Raises TableValidationError if any row fails validation.
+
+    :param df: DataFrame to validate.
+    :param model: Pydantic model to validate against.
+    :raises: TableValidationError
+    """
+    errors = []
+
+    for i, row in enumerate(df.to_dict(orient="records")):
+        try:
+            model(**row)
+        except ValidationError as e:
+            errors.append(f"Row {i} failed validation: {e}")
+
+    if errors:
+        error_message = "\n".join(errors)
+        raise DataFrameValidationError(
+            f"Table validation failed with the following errors:\n{error_message}"
+        )

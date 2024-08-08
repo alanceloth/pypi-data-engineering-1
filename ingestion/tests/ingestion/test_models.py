@@ -1,5 +1,13 @@
-from ingestion.models import PypiJobParameters, FileDownloads
+from ingestion.models import PypiJobParameters, FileDownloads, ValidationError, BaseModel, Type
 from ingestion.bigquery import build_pypi_query
+import pytest
+import duckdb
+import pandas as pd
+
+
+class DataFrameValidationError(Exception):
+    """Custom exception for DataFrame validation errors."""
+
 
 def test_build_pypi_query():
     params = PypiJobParameters(
@@ -22,3 +30,77 @@ def test_build_pypi_query():
         AND timestamp < TIMESTAMP("2023-11-30")
     """
     assert query.strip() == expected_query.strip()
+
+@pytest.fixture
+def file_downloads_df():
+    # Set up DuckDB in-memory database
+    conn = duckdb.connect(database=":memory:", read_only=False)
+    conn.execute(
+        """
+    CREATE TABLE tbl (
+        timestamp TIMESTAMP WITH TIME ZONE, 
+        country_code VARCHAR, 
+        url VARCHAR, 
+        project VARCHAR, 
+        file STRUCT(filename VARCHAR, project VARCHAR, version VARCHAR, type VARCHAR), 
+        details STRUCT(
+            installer STRUCT(name VARCHAR, version VARCHAR), 
+            python VARCHAR, 
+            implementation STRUCT(name VARCHAR, version VARCHAR), 
+            distro STRUCT(
+                name VARCHAR, 
+                version VARCHAR, 
+                id VARCHAR, 
+                libc STRUCT(lib VARCHAR, version VARCHAR)
+            ), 
+            system STRUCT(name VARCHAR, release VARCHAR), 
+            cpu VARCHAR, 
+            openssl_version VARCHAR, 
+            setuptools_version VARCHAR, 
+            rustc_version VARCHAR,
+            ci BOOLEAN
+        ), 
+        tls_protocol VARCHAR, 
+        tls_cipher VARCHAR
+    )
+    """
+    )
+    csv_file_path = 'data/duckdb.csv'
+    # Load data from CSV
+    conn.execute(f"COPY tbl FROM '{csv_file_path}' (HEADER)")
+    # Create DataFrame
+    return conn.execute("SELECT * FROM tbl USING SAMPLE 5").df()
+
+def validate_dataframe(df: pd.DataFrame, model: Type[BaseModel]):
+    """
+    Validates each row of a DataFrame against a Pydantic model.
+    Raises DataFrameValidationError if any row fails validation.
+    :param df: DataFrame to validate.
+    :param model: Pydantic model to validate against.
+    :raises: DataFrameValidationError
+    """
+    errors = []
+
+    for i, row in enumerate(df.to_dict(orient="records")):
+        try:
+            model(**row)
+        except ValidationError as e:
+            errors.append(f"Row {i} failed validation: {e}")
+
+    if errors:
+        error_message = "\n".join(errors)
+        raise DataFrameValidationError(
+            f"DataFrame validation failed with the following errors:\n{error_message}"
+        )
+    
+def test_file_download_validation(file_downloads_df):
+    try:
+        validate_dataframe(file_downloads_df, FileDownloads)
+    except DataFrameValidationError as e: 
+        pytest.fail(f"DataFrame validation failed: {e}")
+
+def test_file_download_invalid_data(file_downloads_df):
+    file_downloads_df.at[0, "details"] = 123
+
+    with pytest.raises(DataFrameValidationError):
+        validate_dataframe(file_downloads_df, FileDownloads)
