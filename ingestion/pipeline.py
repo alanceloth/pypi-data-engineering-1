@@ -4,17 +4,18 @@ from ingestion.bigquery import (
     build_pypi_query,
 )
 import os
+from ingestion.models import PypiJobParameters
+import fire
 
 
-def main():
-    os.environ["GOOGLE_APPLICATION_CREDENTIALS"] = (
-        "/root/.config/gcloud/service_account.json"
-    )
+def main(params: PypiJobParameters):
     df = get_bigquery_result(
-        build_pypi_query(), get_bigquery_client("pypi-data-engineering-1")
+        build_pypi_query(), get_bigquery_client(params.gcp_project)
     )
+    print(df)
+    
     print("hello world")
 
 
 if __name__ == "__main__":
-    main()
+    fire.Fire(lambda **kwargs: main(PypiJobParameters(**kwargs)))

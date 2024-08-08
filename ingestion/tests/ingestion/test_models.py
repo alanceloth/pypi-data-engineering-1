@@ -1,4 +1,4 @@
-from ingestion.models import PypiJobParameters
+from ingestion.models import PypiJobParameters, FileDownloads
 from ingestion.bigquery import build_pypi_query
 
 def test_build_pypi_query():
